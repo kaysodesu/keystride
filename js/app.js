@@ -4,7 +4,14 @@
   const KB = window.KS_KB, Typer = window.KS_Typer, Store = window.KS_Store;
   const view = document.getElementById('view');
   let cleanups = [];
-  let pendingResult = null; // a guest's last score, saved if they sign up
+  let pendingResult = null; // a guest's last score, saved if they create a profile
+  const DISCORD_URL = 'https://discord.gg/rVsJ5Q88yw';
+  const DISCORD_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M20.3 4.4A19.6 19.6 0 0 0 15.4 3l-.6 1.3a18.2 18.2 0 0 0-5.6 0L8.6 3a19.6 19.6 0 0 0-4.9 1.4C.6 9 0 13.5.3 18a19.8 19.8 0 0 0 6 3l1.3-2.1a12.8 12.8 0 0 1-2-1l.5-.4a14 14 0 0 0 11.9 0l.5.4c-.6.4-1.3.7-2 1L17.7 21a19.7 19.7 0 0 0 6-3c.4-5.2-.7-9.7-3.4-13.6zM8.5 15.3c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.1 2.4c0 1.3-.9 2.4-2.1 2.4zm7 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.1 2.4c0 1.3-.9 2.4-2.1 2.4z"/></svg>';
+  const discordCardHTML = () => `<div class="card discord-card">
+      <div class="discord-icon">${DISCORD_ICON}</div>
+      <div><h3>Join the Keystride Discord</h3><p class="muted">Share your scores, get typing tips and meet other people practicing.</p></div>
+      <a class="btn discord" href="${DISCORD_URL}" target="_blank" rel="noopener noreferrer">Join Discord</a>
+    </div>`;
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = sel => view.querySelector(sel);
@@ -74,10 +81,9 @@
     const u = Store.current();
     document.querySelectorAll('.nav-links a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + path));
     document.getElementById('nav-account').innerHTML = u
-      ? `<a href="#/dashboard" class="user-chip" title="Your dashboard"><span class="avatar">${esc(u.name[0].toUpperCase())}</span>${esc(u.name)}</a><button class="btn ghost sm" id="logout">Log out</button>`
-      : `<a href="#/login" class="btn ghost sm">Sign in</a><a href="#/signup" class="btn sm">Sign up free</a>`;
-    const lo = document.getElementById('logout');
-    if (lo) lo.onclick = async () => { await Store.logOut(); toast('You are logged out.'); if (location.hash === '#/' || !location.hash) route(); else go('#/'); };
+      ? `<a href="#/dashboard" class="user-chip" title="Your dashboard"><span class="avatar">${esc(u.firstName[0].toUpperCase())}</span>${esc(u.firstName)} <small class="muted">@${esc(u.username)}</small></a>`
+      : `<a href="#/profile" class="btn sm">Create profile</a>`;
+    document.getElementById('nav-account').insertAdjacentHTML('afterbegin', `<a class="btn ghost sm discord-nav" href="${DISCORD_URL}" target="_blank" rel="noopener noreferrer" title="Join our Discord">${DISCORD_ICON}<span>Discord</span></a>`);
   }
 
   // ---------- Home ----------
@@ -86,14 +92,14 @@
     view.innerHTML = `
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">Free typing practice · No account required</p>
+        <p class="eyebrow">Free typing practice · No sign-up required</p>
         <h1>Learn to type without looking.</h1>
         <p class="lead">Practice with real passages, follow a step-by-step course with see-through hands that show exactly which finger to use, and track your progress over time.</p>
         <div class="cta">
           <a class="btn lg" href="#/practice">Start typing — free</a>
           <a class="btn ghost lg" href="#/course">Take the course</a>
         </div>
-        ${u ? '' : '<p class="muted small">Want to keep your scores and upload your own texts? <a href="#/signup">Create a free account</a>.</p>'}
+        ${u ? '' : '<p class="muted small">Want to keep your scores and upload your own texts? <a href="#/profile">Create a free profile</a> — just a name, no email.</p>'}
       </div>
       <div class="hero-kb card"><div id="hero-kb"></div><p class="caption">Each key is tinted by the finger that presses it.</p></div>
     </section>
@@ -101,8 +107,9 @@
       <a class="feature card" href="#/practice"><div class="ficon">⌨</div><h3>Free practice</h3><p>Timed or untimed tests on passages and common words. Live WPM, accuracy and error tracking.</p></a>
       <a class="feature card" href="#/course"><div class="ficon">✋</div><h3>Guided course</h3><p>${LESSONS.length} lessons from the home row to numbers and symbols, with highlighted diagrams and animated hands.</p></a>
       <a class="feature card" href="#/prompts"><div class="ficon">⇪</div><h3>Your own prompts</h3><p>Upload a text file or paste anything — notes, code, lyrics you wrote — and practice with it.</p></a>
-      <a class="feature card" href="#/dashboard"><div class="ficon">📈</div><h3>Track progress</h3><p>With an account, every score is saved so you can watch your speed and accuracy climb.</p></a>
-    </section>`;
+      <a class="feature card" href="#/dashboard"><div class="ficon">📈</div><h3>Track progress</h3><p>Create a profile and every score is saved so you can watch your speed and accuracy climb.</p></a>
+    </section>
+    ${discordCardHTML()}`;
     const kb = KB.create($('#hero-kb'), { hands: true });
     onCleanup(runDemo(kb, 'hello world'.split(''), { interval: 700 }));
   }
@@ -115,7 +122,7 @@
     view.innerHTML = `
     <section class="page">
       <div class="page-head">
-        <div><h1>Typing practice</h1><p class="muted">Free for everyone. ${u ? 'Your scores are saved automatically.' : '<a href="#/signup">Sign up</a> to save your scores.'}</p></div>
+        <div><h1>Typing practice</h1><p class="muted">Free for everyone. ${u ? 'Your scores are saved automatically.' : '<a href="#/profile">Create a profile</a> to save your scores.'}</p></div>
       </div>
       <div class="toolbar card">
         <label>Text
@@ -133,7 +140,7 @@
         <button class="btn ghost" id="restart" title="Restart (Esc)">↻ Restart</button>
       </div>
       <div class="card custom" id="custom" hidden>
-        <label for="custom-text"><span>Paste any text to practice with${u ? '' : ' (it will not be saved — <a href="#/signup">sign up</a> to keep prompts)'}:</span></label>
+        <label for="custom-text"><span>Paste any text to practice with${u ? '' : ' (it will not be saved — <a href="#/profile">create a profile</a> to keep prompts)'}:</span></label>
         <textarea id="custom-text" rows="4" placeholder="Paste or type your text here…"></textarea>
         <button class="btn" id="custom-go">Use this text</button>
       </div>
@@ -189,7 +196,7 @@
         saveNote = st.wpm > best && user.scores.length ? `<p class="good">🎉 New personal best! (previous ${best} WPM)</p>` : '<p class="muted">Saved to your <a href="#/dashboard">dashboard</a>.</p>';
       } else {
         pendingResult = result;
-        saveNote = `<p class="muted">This score isn't saved yet.</p><a class="btn" href="#/signup">Sign up free to save it</a>`;
+        saveNote = `<p class="muted">This score isn't saved yet.</p><a class="btn" href="#/profile">Create a profile to save it</a>`;
       }
       $('#result').innerHTML = `
         <div class="result card">
@@ -234,7 +241,7 @@
       <ol>${LESSONS.map((l, i) => `<li><a href="#/course?l=${l.id}" class="${lesson && lesson.id === l.id ? 'active' : ''}">
         <span class="num ${progress[l.id] ? 'done' : ''}">${progress[l.id] ? '✓' : i + 1}</span>
         <span><b>${esc(l.title)}</b><small>${esc(l.blurb)}</small></span></a></li>`).join('')}</ol>
-      ${u ? '' : '<p class="muted small"><a href="#/signup">Sign up</a> to save your course progress.</p>'}
+      ${u ? '' : '<p class="muted small"><a href="#/profile">Create a profile</a> to save your course progress.</p>'}
     </aside>`;
 
     if (!lesson) {
@@ -323,7 +330,7 @@
             <h2>Lesson complete!</h2>
             <div class="result-nums"><div><b>${st.wpm}</b><span>WPM</span></div><div><b>${st.accuracy}%</b><span>accuracy</span></div><div><b>${st.errors}</b><span>wrong keys</span></div></div>
             ${st.accuracy < 90 ? '<p class="muted">Tip: aim for 90%+ accuracy before moving on. Slow down and watch the guide hands.</p>' : ''}
-            ${user ? '<p class="muted">Progress saved.</p>' : '<p class="muted"><a href="#/signup">Sign up free</a> to save your course progress.</p>'}
+            ${user ? '<p class="muted">Progress saved.</p>' : '<p class="muted"><a href="#/profile">Create a profile</a> to save your course progress.</p>'}
             <div class="row"><button class="btn ghost" id="redo">Try again</button>
             ${next ? `<a class="btn" href="#/course?l=${next.id}">Next lesson: ${esc(next.title)} →</a>` : '<a class="btn" href="#/practice">Course finished — go practice!</a>'}</div>
           </div>`;
@@ -348,9 +355,9 @@
       view.innerHTML = `<section class="page narrow"><div class="card gate">
         <div class="ficon big">⇪</div>
         <h1>Practice with your own text</h1>
-        <p class="lead">Create a free account to upload text files or paste your own prompts — work emails, essays, code, anything — and keep them for practice anytime.</p>
-        <div class="cta"><a class="btn lg" href="#/signup?next=/prompts">Sign up free</a><a class="btn ghost lg" href="#/login?next=/prompts">Sign in</a></div>
-        <p class="muted small">Just want to try once? <a href="#/practice?src=custom">Paste text in practice mode</a> — no account needed.</p>
+        <p class="lead">Create a free profile to upload text files or paste your own prompts — work emails, essays, code, anything — and keep them for practice anytime.</p>
+        <div class="cta"><a class="btn lg" href="#/profile?next=/prompts">Create a profile</a></div>
+        <p class="muted small">Just want to try once? <a href="#/practice?src=custom">Paste text in practice mode</a> — no profile needed.</p>
       </div></section>`;
       return;
     }
@@ -454,7 +461,7 @@
 
   function dashboardView() {
     const u = Store.current();
-    if (!u) { go('#/login?next=/dashboard'); return; }
+    if (!u) { go('#/profile?next=/dashboard'); return; }
     const sc = u.scores;
     const avg = k => (sc.length ? Math.round((sc.reduce((a, s) => a + s[k], 0) / sc.length) * 10) / 10 : 0);
     const best = sc.length ? Math.max(...sc.map(s => s.wpm)) : 0;
@@ -462,7 +469,7 @@
     const recentAvg = last10.length ? Math.round(last10.reduce((a, s) => a + s.wpm, 0) / last10.length) : 0;
     const done = Object.keys(u.progress).length;
     view.innerHTML = `<section class="page">
-      <div class="page-head"><div><h1>Hi, ${esc(u.name)}</h1><p class="muted">Member since ${new Date(u.created).toLocaleDateString()}</p></div>
+      <div class="page-head"><div><h1>Hi, ${esc(u.firstName)}</h1><p class="muted">@${esc(u.username)} · Practicing since ${new Date(u.created).toLocaleDateString()}</p></div>
         <a class="btn" href="#/practice">Practice now</a></div>
       <div class="tiles">
         <div class="tile card"><span>Best speed</span><b>${best}<small> WPM</small></b></div>
@@ -486,90 +493,63 @@
         </div>
       </div>
       <div class="card account-actions">
-        <h3>Account</h3>
-        <p class="muted small">Signed in${u.email ? ' as <b>' + esc(u.email) + '</b>' : ''} with ${{ 'google.com': 'Google', 'microsoft.com': 'Microsoft' }[u.provider] || 'email'}. Your scores, prompts and progress sync across devices.</p>
-        ${u.provider === 'password' && !u.emailVerified ? '<p class="note small">Please verify your email address — check your inbox for the link. <button class="linkish" id="resend">Resend link</button></p>' : ''}
-        <div class="row"><button class="btn ghost sm" id="clear">Clear score history</button><button class="btn ghost sm danger" id="delacct">Delete account</button></div>
+        <h3>Your profile</h3>
+        <p class="muted small">You're <b>${esc(u.firstName)}</b> (@${esc(u.username)}). Your scores, prompts and progress are saved in this browser on this device.</p>
+        <div class="row"><a class="btn ghost sm" href="#/profile">Edit profile</a><button class="btn ghost sm" id="clear">Clear score history</button><button class="btn ghost sm danger" id="delacct">Delete profile</button></div>
       </div>
+      ${discordCardHTML()}
     </section>`;
-    const resend = $('#resend');
-    if (resend) resend.onclick = async () => {
-      try { await Store.resendVerification(); toast('Verification email sent.'); } catch (e) { toast(e.message); }
-    };
     $('#clear').onclick = async () => {
       if (!confirm('Clear all saved scores? This cannot be undone.')) return;
       try { await Store.clearScores(); toast('Scores cleared.'); route(); } catch (e) { toast(e.message); }
     };
     $('#delacct').onclick = async () => {
-      if (!confirm('Delete your account, scores and prompts? This cannot be undone.')) return;
-      try { await Store.deleteAccount(); toast('Account deleted.'); go('#/'); } catch (e) { toast(e.message); }
+      if (!confirm('Delete your profile, scores, prompts and course progress from this device? This cannot be undone.')) return;
+      try { await Store.resetProfile(); toast('Profile deleted.'); go('#/'); } catch (e) { toast(e.message); }
     };
   }
 
-  // ---------- Auth ----------
-  const GOOGLE_ICON = '<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
-  const MS_ICON = '<svg viewBox="0 0 21 21" width="18" height="18" aria-hidden="true"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>';
-
-  function authView(params, mode) {
-    if (Store.current()) { go('#' + (params.get('next') || '/dashboard')); return; }
+  // ---------- Profile ----------
+  function profileView(params) {
+    const u = Store.current();
     const next = params.get('next') || '/dashboard';
-    const isUp = mode === 'signup';
-    const q = params.get('next') ? '?next=' + encodeURIComponent(next) : '';
-    const ready = Store.configured;
-    view.innerHTML = `<section class="page narrow"><div class="card auth">
-      <h1>${isUp ? 'Create your free account' : 'Sign in to Keystride'}</h1>
-      <p class="muted">Save your scores, upload your own prompts and track course progress on any device.</p>
-      ${pendingResult ? `<p class="note">Your last score (<b>${pendingResult.wpm} WPM</b>, ${pendingResult.accuracy}%) will be saved to your account.</p>` : ''}
-      ${ready ? '' : '<p class="note">Account sign-in hasn’t been switched on for this site yet. You can still use everything as a guest.</p>'}
-      <div class="providers">
-        <button class="btn provider" id="g-btn" ${ready ? '' : 'disabled'}>${GOOGLE_ICON}<span>Continue with Google</span></button>
-        <button class="btn provider" id="ms-btn" ${ready ? '' : 'disabled'}>${MS_ICON}<span>Continue with Microsoft <small>(Outlook, Hotmail, Live)</small></span></button>
+    view.innerHTML = `<section class="page narrow">
+      <div class="card auth">
+        <h1>${u ? 'Edit your profile' : 'Create your profile'}</h1>
+        <p class="muted">${u ? 'Change how your name appears on Keystride.' : 'Pick a name to save your scores, upload your own prompts and track course progress. No email or password needed.'}</p>
+        ${!u && pendingResult ? `<p class="note">Your last score (<b>${pendingResult.wpm} WPM</b>, ${pendingResult.accuracy}%) will be saved to your profile.</p>` : ''}
+        <form id="pfform">
+          <label>First name<input id="pf-first" autocomplete="given-name" maxlength="40" required value="${u ? esc(u.firstName) : ''}"></label>
+          <label>Username<input id="pf-user" autocomplete="nickname" maxlength="24" required minlength="3" value="${u ? esc(u.username) : ''}" placeholder="e.g. speedy_typer"></label>
+          <p class="muted small" style="margin:-.4rem 0 0">3–24 characters: letters, numbers, _ . -</p>
+          <p class="error" id="pf-err" role="alert"></p>
+          <button class="btn lg block" type="submit">${u ? 'Save changes' : 'Create profile'}</button>
+        </form>
+        ${u ? '' : `<div class="divider"><span>or</span></div>
+        <a class="btn ghost lg block" href="#/practice">Continue as guest</a>
+        <p class="muted small center">Guests can use practice and the full course. Scores aren’t saved.</p>`}
+        <p class="muted small center">Your profile is saved in this browser only. It won’t follow you to other devices, and clearing your browser data removes it.</p>
       </div>
-      <div class="divider"><span>or use your email</span></div>
-      <div class="tabs"><a href="#/login${q}" class="${isUp ? '' : 'on'}">Sign in</a><a href="#/signup${q}" class="${isUp ? 'on' : ''}">Create account</a></div>
-      <form id="aform">
-        ${isUp ? '<label>Your name<input id="aname" autocomplete="name" maxlength="60" required></label>' : ''}
-        <label>Email<input id="aemail" type="email" autocomplete="email" required></label>
-        <label>Password<input id="ap" type="password" autocomplete="${isUp ? 'new-password' : 'current-password'}" required minlength="6"></label>
-        ${isUp ? '<label>Confirm password<input id="ap2" type="password" autocomplete="new-password" required minlength="6"></label>' : ''}
-        <p class="error" id="aerr" role="alert"></p>
-        <button class="btn lg block" type="submit" ${ready ? '' : 'disabled'}>${isUp ? 'Create account' : 'Sign in'}</button>
-        ${isUp ? '' : '<button type="button" class="linkish" id="forgot">Forgot your password?</button>'}
-      </form>
-      <div class="divider"><span>or</span></div>
-      <a class="btn ghost lg block" href="#/practice" id="guest">Continue as guest</a>
-      <p class="muted small center">Guests can use practice and the full course. Scores aren’t saved until you sign in.</p>
-    </div></section>`;
-
-    const err = $('#aerr');
-    const busy = on => view.querySelectorAll('.auth button').forEach(b => (b.disabled = on || !ready));
-    async function finish(promise, welcome) {
-      err.textContent = '';
-      busy(true);
-      try {
-        const user = await promise();
-        if (pendingResult) { await Store.addScore(pendingResult).catch(() => {}); pendingResult = null; toast(`Welcome, ${user.name}! Your score was saved.`); }
-        else toast(welcome(user));
-        go('#' + next);
-      } catch (ex) { err.textContent = ex.message; busy(false); }
-    }
-    $('#g-btn').onclick = () => finish(Store.signInGoogle, u => `Welcome, ${u.name}!`);
-    $('#ms-btn').onclick = () => finish(Store.signInMicrosoft, u => `Welcome, ${u.name}!`);
-    $('#aform').onsubmit = e => {
+      ${discordCardHTML()}
+    </section>`;
+    $('#pf-first').focus();
+    $('#pfform').onsubmit = async e => {
       e.preventDefault();
-      const email = $('#aemail').value, pw = $('#ap').value;
-      if (isUp) {
-        if (pw !== $('#ap2').value) { err.textContent = 'Passwords do not match.'; return; }
-        finish(() => Store.signUpEmail($('#aname').value, email, pw), u => `Welcome, ${u.name}! We sent a verification link to your email.`);
-      } else finish(() => Store.signInEmail(email, pw), u => `Welcome back, ${u.name}!`);
-    };
-    const forgot = $('#forgot');
-    if (forgot) forgot.onclick = async () => {
+      const err = $('#pf-err');
       err.textContent = '';
-      try { await Store.resetPassword($('#aemail').value); toast('If that email has an account, a reset link is on its way.'); }
-      catch (ex) { err.textContent = ex.message; }
+      try {
+        if (u) {
+          await Store.updateProfile($('#pf-first').value, $('#pf-user').value);
+          toast('Profile updated.');
+          go('#/dashboard');
+          return;
+        }
+        const p = await Store.createProfile($('#pf-first').value, $('#pf-user').value);
+        if (pendingResult) { await Store.addScore(pendingResult).catch(() => {}); pendingResult = null; toast(`Welcome, ${p.firstName}! Your score was saved.`); }
+        else toast(`Welcome, ${p.firstName}!`);
+        go('#' + next);
+      } catch (ex) { err.textContent = ex.message; }
     };
-    if (ready) (isUp ? $('#aname') : $('#aemail')).focus();
   }
 
   // ---------- Router ----------
@@ -579,8 +559,9 @@
     '/course': courseView,
     '/prompts': promptsView,
     '/dashboard': dashboardView,
-    '/login': p => authView(p, 'login'),
-    '/signup': p => authView(p, 'signup'),
+    '/profile': profileView,
+    '/login': profileView,
+    '/signup': profileView,
   };
 
   function route() {
