@@ -4,18 +4,15 @@
 
 The site works for guests as soon as step 1 is done. Steps 2–6 switch on accounts. Allow about 30 minutes, most of it for the Microsoft step.
 
-In the steps below, replace `YOUR-NAME` with your GitHub username and `keystride` with your repository name if you choose a different one.
+- **Live site:** https://kaysodesu.github.io/keystride/
+- **Repository:** https://github.com/kaysodesu/keystride
 
 ---
 
-## 1. Publish the site on GitHub Pages
-1. Sign in at https://github.com and click **New repository**. Name it `keystride` and set it to **Public**. (GitHub Pages is free for public repositories.)
-2. On the new repository page, click **uploading an existing file**. Drag in **everything inside** the `keystride` folder, including `.nojekyll`, then click **Commit changes**.
-   - Tip: hidden files such as `.nojekyll` may not show in File Explorer. Turn on *View → Show → Hidden items*.
-3. Go to **Settings → Pages**. Under *Build and deployment*, choose **Deploy from a branch**, branch **main**, folder **/ (root)**, then click **Save**.
-4. After a minute or two, your site is live at `https://YOUR-NAME.github.io/keystride/`.
+## 1. Publish the site on GitHub Pages ✅ Done
+The repository is public and GitHub Pages serves the `main` branch. Every change you push or commit to `main` goes live within a minute or two.
 
-At this point, guests can use practice and the full course. The sign-in buttons say accounts aren't switched on yet.
+Guests can already use practice and the full course. Until steps 2–6 are done, the sign-in buttons say accounts aren't switched on yet.
 
 ## 2. Create a Firebase project
 1. Go to https://console.firebase.google.com and click **Create a project**. Any name works, such as `keystride`. You can turn Google Analytics off.
@@ -52,7 +49,7 @@ In Firebase, go to **Build → Authentication → Get started → Sign-in method
    - The secret expires (the longest option is 24 months). Put a reminder in your calendar to create a new one and paste it into Firebase before then.
 
 ## 4. Allow your GitHub Pages address
-In Firebase, go to **Authentication → Settings → Authorized domains → Add domain** and enter `YOUR-NAME.github.io`. Use only the domain: no `https://` and no `/keystride`.
+In Firebase, go to **Authentication → Settings → Authorized domains → Add domain** and enter `kaysodesu.github.io`. Use only the domain: no `https://` and no `/keystride`.
 
 ## 5. Create the database and lock it down
 1. Go to **Build → Firestore Database → Create database**. Pick a location near your users and start in **production mode**.
@@ -68,7 +65,7 @@ In Firebase, go to **Authentication → Settings → Authorized domains → Add 
 ### Troubleshooting
 | Message | Fix |
 |---|---|
-| “This website address is not yet authorized for sign-in” | Step 4: add `YOUR-NAME.github.io` to Authorized domains |
+| “This website address is not yet authorized for sign-in” | Step 4: add `kaysodesu.github.io` to Authorized domains |
 | “This sign-in method has not been turned on yet” | Step 3: enable that provider |
 | Microsoft sign-in shows an error about the redirect URI | The Entra redirect URI must exactly match Firebase's callback URL (step 3) |
 | Microsoft sign-in stopped working after a long time | The client secret expired. Create a new one in Entra and paste it into Firebase |

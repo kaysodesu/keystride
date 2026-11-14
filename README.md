@@ -2,7 +2,9 @@
 
 A free typing practice site that runs on **GitHub Pages**. There's no server to run. Sign-in and saved data use **Firebase**.
 
-👉 **To put it online, follow [SETUP.md](SETUP.md).**
+🌐 **Live site:** https://kaysodesu.github.io/keystride/
+
+👉 **To switch on accounts, follow [SETUP.md](SETUP.md)** (steps 2–6).
 
 ## Ways to use it
 - **Guest:** practice and the full course, with no account. Scores aren't saved.
