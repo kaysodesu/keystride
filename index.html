@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keystride Typing</title>
+  <meta name="description" content="Free typing practice, a step-by-step touch typing course with animated hand diagrams, and optional accounts to save your scores and prompts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='7' width='28' height='18' rx='4' fill='%234f46e5'/%3E%3Crect x='6' y='11' width='4' height='4' rx='1' fill='white'/%3E%3Crect x='12' y='11' width='4' height='4' rx='1' fill='white'/%3E%3Crect x='18' y='11' width='4' height='4' rx='1' fill='white'/%3E%3Crect x='9' y='18' width='14' height='3' rx='1' fill='white'/%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="#/" class="brand"><span class="logo">⌨</span>Keystride</a>
+      <button class="menu-btn" id="menu-btn" aria-label="Menu">☰</button>
+      <nav class="nav-links" id="nav-links">
+        <a href="#/practice">Practice</a>
+        <a href="#/course">Course</a>
+        <a href="#/prompts">My Prompts</a>
+        <a href="#/dashboard">Dashboard</a>
+        <div class="nav-account" id="nav-account"></div>
+      </nav>
+    </div>
+  </header>
+  <main id="view"></main>
+  <footer class="foot">Keystride · Free typing practice for everyone</footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/keyboard.js"></script>
+  <script src="js/typing.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

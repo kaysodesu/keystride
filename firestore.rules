@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// Copy this into Firebase console → Firestore Database → Rules, then press Publish.
+// Each signed-in person can only read and write their own data.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['name', 'created', 'progress'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.progress is map
+        && request.resource.data.progress.size() <= 50;
+
+      match /scores/{scoreId} {
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['date', 'wpm', 'accuracy', 'errors', 'seconds', 'chars', 'source', 'kind'])
+          && request.resource.data.wpm is number && request.resource.data.wpm >= 0 && request.resource.data.wpm <= 1000
+          && request.resource.data.accuracy is number && request.resource.data.accuracy >= 0 && request.resource.data.accuracy <= 100
+          && request.resource.data.source is string && request.resource.data.source.size() <= 100
+          && request.resource.data.kind in ['practice', 'lesson'];
+      }
+
+      match /prompts/{promptId} {
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['title', 'text', 'created'])
+          && request.resource.data.title is string && request.resource.data.title.size() <= 60
+          && request.resource.data.text is string && request.resource.data.text.size() <= 20000;
+      }
+    }
+  }
+}
