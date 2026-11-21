@@ -30,3 +30,6 @@ tools/dev-server.js     optional local preview: node tools/dev-server.js
 
 ## Bringing back real accounts later
 An earlier version used Firebase for Google, Microsoft and email sign-in, with a setup guide. It's still in this repository's history, in the commit "Keystride typing practice site".
+
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/T5N72AQZSL)
